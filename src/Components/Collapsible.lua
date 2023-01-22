@@ -1,59 +1,47 @@
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 
+local Roact = require(Hoarcekat.Vendor.Roact)
+local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
+
 local Assets = require(Hoarcekat.Plugin.Assets)
+
 local FitComponent = require(script.Parent.FitComponent)
 local IconListItem = require(script.Parent.IconListItem)
-local Roact = require(Hoarcekat.Vendor.Roact)
-
-local e = Roact.createElement
-
-local Collapsible = Roact.Component:extend("Collapsible")
 
 local OFFSET = 8
 
-function Collapsible:init()
-	self:setState({
-		open = true,
-	})
+local function Collapsible(props)
+	local open, toggle = RoactHooked.UseToggle(true)
 
-	self.toggle = function()
-		self:setState({
-			open = not self.state.open,
-		})
-	end
-end
-
-function Collapsible:render()
-	local content = self.state.open and self.props[Roact.Children]
-
-	return e(FitComponent, {
+	local content = open and props[Roact.Children]
+	return Roact.createElement(FitComponent, {
 		ContainerClass = "Frame",
 		ContainerProps = {
 			BackgroundTransparency = 1,
 		},
+
 		LayoutClass = "UIListLayout",
 		LayoutProps = {
 			Padding = UDim.new(0, 5),
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		},
 	}, {
-		Topbar = e(IconListItem, {
-			Activated = self.toggle,
-			Icon = self.state.open and
-				Assets.collapse_down or
-				Assets.collapse_right,
-			Text = self.props.Title,
+		Topbar = Roact.createElement(IconListItem, {
+			Activated = toggle,
+			Icon = open and Assets.collapse_down or Assets.collapse_right,
+			Text = props.Title,
 		}),
 
-		Content = content and e(FitComponent, {
+		Content = content and Roact.createElement(FitComponent, {
 			ContainerClass = "Frame",
 			ContainerProps = {
 				BackgroundTransparency = 1,
 				Position = UDim2.fromOffset(OFFSET, 0),
 			},
+
 			LayoutClass = "UIListLayout",
 		}, {
-			UIPadding = e("UIPadding", {
+			UIPadding = Roact.createElement("UIPadding", {
 				PaddingLeft = UDim.new(0, OFFSET),
 			}),
 
@@ -62,4 +50,7 @@ function Collapsible:render()
 	})
 end
 
-return Collapsible
+return RoactHooked.HookPure(Collapsible, {
+	ComponentType = "PureComponent",
+	Name = "Collapsible",
+})

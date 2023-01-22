@@ -1,0 +1,6 @@
+{
+	"luau-lsp.sourcemap.rojoProjectFile": "place.project.json",
+	"robloxLsp.diagnostics.disable": [
+		"undefined-type"
+	]
+}

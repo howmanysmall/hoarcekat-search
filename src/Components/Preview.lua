@@ -2,15 +2,13 @@ local CoreGui = game:GetService("CoreGui")
 local Selection = game:GetService("Selection")
 
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
+local Janitor = require(Hoarcekat.Vendor.Janitor)
+local Roact = require(Hoarcekat.Vendor.Roact)
+local RoactRodux = require(Hoarcekat.Vendor.RoactRodux)
 
 local Assets = require(Hoarcekat.Plugin.Assets)
 local EventConnection = require(script.Parent.EventConnection)
 local FloatingButton = require(script.Parent.FloatingButton)
-local Maid = require(Hoarcekat.Plugin.Maid)
-local Roact = require(Hoarcekat.Vendor.Roact)
-local RoactRodux = require(Hoarcekat.Vendor.RoactRodux)
-
-local e = Roact.createElement
 
 local Preview = Roact.PureComponent:extend("Preview")
 
@@ -29,13 +27,13 @@ function Preview:init()
 
 	self.openSelection = function()
 		if self.currentPreview and self.currentPreview.target then
-			Selection:Set({ self.currentPreview.target })
+			Selection:Set({self.currentPreview.target})
 		end
 	end
 
 	self.expandSelection = function()
 		self.expand = not self.expand
-		self.display.Parent = self.expand and CoreGui or nil
+		self.display.Parent = if self.expand then CoreGui else nil
 
 		self:updateDisplay()
 	end
@@ -62,6 +60,7 @@ function Preview:setError(err)
 			-- Error was canceled or replaced.
 			return
 		end
+
 		warn(err)
 	end)
 end
@@ -74,10 +73,12 @@ function Preview:updateDisplay()
 	if not self.currentPreview then
 		return
 	end
+
 	local target = self.currentPreview.target
 	if not target then
 		return
 	end
+
 	if self.expand then
 		target.Parent = self.display
 	else
@@ -91,11 +92,13 @@ function Preview:refreshPreview()
 		self:clearPreview()
 		return
 	end
+
 	local err, nextState = self:prepareState(selectedStory)
 	if err then
 		self:setError(err)
 		return
 	end
+
 	self:clearPreview()
 	self.currentPreview = nextState
 	self:updateDisplay()
@@ -107,26 +110,26 @@ function Preview:clearPreview()
 	if state == nil then
 		return
 	end
+
 	state:destroy()
 	self.currentPreview = nil
 end
 
 function Preview:prepareState(selectedStory)
-	local state = {
-		cleanup = nil,
-		monkeyRequireCache = {},
-		monkeyGlobalTable = {},
-		monkeyRequireMaid = Maid.new(),
-		target = nil,
-	}
+	local state = {}
+	state.cleanup = nil
+	state.monkeyRequireCache = {}
+	state.monkeyGlobalTable = {}
+	state.monkeyRequireJanitor = Janitor.new()
+	state.target = nil
 
 	function state:destroy()
-		self.monkeyRequireMaid:DoCleaning()
+		self.monkeyRequireJanitor:Cleanup()
 
 		if self.cleanup then
 			local ok, result = pcall(self.cleanup)
 			if not ok then
-				warn("Error cleaning up story: " .. result)
+				warn(`Error cleaning up story: {result}`)
 			end
 
 			self.cleanup = nil
@@ -142,14 +145,14 @@ function Preview:prepareState(selectedStory)
 			return state.monkeyRequireCache[otherScript]
 		end
 
-		state.monkeyRequireMaid:GiveTask(otherScript.Changed:connect(function()
+		state.monkeyRequireJanitor:Add(otherScript.Changed:Connect(function()
 			self:refreshPreview()
-		end))
+		end), "Disconnect")
 
 		-- loadstring is used to avoid cache while preserving `script` (which requiring a clone wouldn't do)
 		local result, parseError = loadstring(otherScript.Source, otherScript:GetFullName())
 		if result == nil then
-			error(("Could not parse %s: %s"):format(otherScript:GetFullName(), parseError))
+			error(`Could not parse {otherScript:GetFullName()}: {parseError}`)
 			return
 		end
 
@@ -172,7 +175,7 @@ function Preview:prepareState(selectedStory)
 	local requireOk, result = xpcall(monkeyRequire, debug.traceback, selectedStory)
 	if not requireOk then
 		state:destroy()
-		return "Error requiring story: " .. result, nil
+		return `Error requiring story: {result}`, nil
 	end
 
 	state.target = Instance.new("Frame")
@@ -180,13 +183,11 @@ function Preview:prepareState(selectedStory)
 	state.target.BackgroundTransparency = 1
 	state.target.Size = UDim2.fromScale(1, 1)
 
-	local execOk, cleanup = xpcall(function()
-		return result(state.target)
-	end, debug.traceback)
+	local execOk, cleanup = xpcall(result, debug.traceback, state.target)
 
 	if not execOk then
 		state:destroy()
-		return "Error executing story: " .. cleanup, nil
+		return `Error executing story: {cleanup}`, nil
 	end
 
 	state.cleanup = cleanup
@@ -196,24 +197,24 @@ end
 function Preview:render()
 	local selectedStory = self.props.selectedStory
 
-	return e("Frame", {
+	return Roact.createElement("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.fromScale(1, 1),
 		[Roact.Ref] = self.rootRef,
 	}, {
-		UIPadding = e("UIPadding", {
+		UIPadding = Roact.createElement("UIPadding", {
 			PaddingLeft = UDim.new(0, 5),
 			PaddingTop = UDim.new(0, 5),
 		}),
 
-		SelectButton = e("Frame", {
-			AnchorPoint = Vector2.new(1, 1),
+		SelectButton = Roact.createElement("Frame", {
+			AnchorPoint = Vector2.one,
 			BackgroundTransparency = 1,
 			Position = UDim2.fromScale(0.99, 0.99),
 			Size = UDim2.fromOffset(40, 40),
 			ZIndex = 2,
 		}, {
-			Button = e(FloatingButton, {
+			Button = Roact.createElement(FloatingButton, {
 				Activated = self.openSelection,
 				Image = Assets.preview,
 				ImageSize = UDim.new(0, 24),
@@ -221,14 +222,14 @@ function Preview:render()
 			}),
 		}),
 
-		ExpandButton = e("Frame", {
-			AnchorPoint = Vector2.new(1, 1),
+		ExpandButton = Roact.createElement("Frame", {
+			AnchorPoint = Vector2.one,
 			BackgroundTransparency = 1,
-			Position = UDim2.new(0.99, -45, 0.99),
+			Position = UDim2.new(0.99, -45, 0.99, 0),
 			Size = UDim2.fromOffset(40, 40),
 			ZIndex = 2,
 		}, {
-			Button = e(FloatingButton, {
+			Button = Roact.createElement(FloatingButton, {
 				Activated = self.expandSelection,
 				Image = "rbxasset://textures/ui/VR/toggle2D.png",
 				ImageSize = UDim.new(0, 24),
@@ -236,12 +237,13 @@ function Preview:render()
 			}),
 		}),
 
-		TrackRemoved = selectedStory and e(EventConnection, {
+		TrackRemoved = selectedStory and Roact.createElement(EventConnection, {
 			callback = function()
 				if not selectedStory:IsDescendantOf(game) then
 					self.props.endPreview()
 				end
 			end,
+
 			event = selectedStory.AncestryChanged,
 		}),
 	})

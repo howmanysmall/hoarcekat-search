@@ -6,5 +6,7 @@ realm = "shared"
 
 [dependencies]
 Roact = "roblox/roact@1.4.2"
-RoactRodux = "roblox/roact-rodux@0.3.0"
-Rodux = "roblox/rodux@3.0.0"
+RoactRodux = "roblox/roact-rodux@0.5.1"
+Rodux = "roblox/rodux@4.0.0-rc.0"
+RoactHooked = "howmanysmall/roact-hooked-luau@0.1.0"
+Janitor = "howmanysmall/janitor@1.15.1"

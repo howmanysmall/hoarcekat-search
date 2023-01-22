@@ -1,31 +1,19 @@
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
+local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
 
-local Roact = require(Hoarcekat.Vendor.Roact)
+local UseExternalEvent = require(Hoarcekat.Plugin.Hooks.UseExternalEvent)
 
-local EventConnection = Roact.Component:extend("EventConnection")
+export type IEventConnectionProps = {
+	event: RBXScriptSignal,
+	callback: (...any) -> (),
+}
 
-function EventConnection:init()
-	self.connection = nil
-end
-
-function EventConnection:didMount()
-	self.connection = self.props.event:Connect(self.props.callback)
-end
-
-function EventConnection.render()
+local function EventConnection(props: IEventConnectionProps)
+	UseExternalEvent(props.event, props.callback)
 	return nil
 end
 
-function EventConnection:didUpdate(oldProps)
-	if self.props.event ~= oldProps.event or self.props.callback ~= oldProps.callback then
-		self.connection:Disconnect()
-		self.connection = self.props.event:Connect(self.props.callback)
-	end
-end
-
-function EventConnection:willUnmount()
-	self.connection:Disconnect()
-	self.connection = nil
-end
-
-return EventConnection
+return RoactHooked.HookPure(EventConnection, {
+	ComponentType = "PureComponent",
+	Name = "EventConnection",
+})

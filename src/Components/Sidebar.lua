@@ -1,16 +1,17 @@
-local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
+local Hoarcekat = script.Parent.Parent.Parent
+
+local Janitor = require(Hoarcekat.Vendor.Janitor)
+local Roact = require(Hoarcekat.Vendor.Roact)
+local RoactRodux = require(Hoarcekat.Vendor.RoactRodux)
 
 local Assets = require(Hoarcekat.Plugin.Assets)
+
 local AutomatedScrollingFrame = require(script.Parent.AutomatedScrollingFrame)
 local Collapsible = require(script.Parent.Collapsible)
 local IconListItem = require(script.Parent.IconListItem)
-local Maid = require(Hoarcekat.Plugin.Maid)
-local Roact = require(Hoarcekat.Vendor.Roact)
-local RoactRodux = require(Hoarcekat.Vendor.RoactRodux)
+local SearchBox = require(script.Parent.SearchBox)
 local StudioThemeAccessor = require(script.Parent.StudioThemeAccessor)
 local TextLabel = require(script.Parent.TextLabel)
-
-local e = Roact.createElement
 
 local Sidebar = Roact.PureComponent:extend("Sidebar")
 
@@ -26,24 +27,25 @@ local USER_SERVICES = {
 }
 
 local function isStoryScript(instance)
-	return instance:IsA("ModuleScript") and instance.Name:match("%.story$")
+	return instance:IsA("ModuleScript") and string.match(instance.Name, "%.story$")
 end
 
 local function SidebarList(props)
 	local contents = {}
 
-	for childName, child in pairs(props.Children) do
+	for childName, child in props.Children do
 		if typeof(child) == "Instance" then
-			contents["Instance" .. child.Name] = e(IconListItem, {
+			contents["Instance" .. child.Name] = Roact.createElement(IconListItem, {
 				Activated = function()
 					props.SelectStory(child)
 				end,
+
 				Icon = Assets.hamburger,
 				Selected = props.SelectedStory == child,
-				Text = child.Name:sub(1, #child.Name - #".story"),
+				Text = string.sub(child.Name, 1, #child.Name - 6),
 			})
 		else
-			contents["Folder" .. childName] = e(SidebarList, {
+			contents["Folder" .. childName] = Roact.createElement(SidebarList, {
 				Children = child,
 				SelectStory = props.SelectStory,
 				SelectedStory = props.SelectedStory,
@@ -52,38 +54,53 @@ local function SidebarList(props)
 		end
 	end
 
-	return e(Collapsible, {
+	return Roact.createElement(Collapsible, {
 		Title = props.Title,
 	}, contents)
 end
 
 function Sidebar:init()
-	self.maid = Maid.new()
+	self.janitor = Janitor.new()
+	self:setState({
+		searchTerm = "",
+	})
 
-	for _, serviceName in ipairs(USER_SERVICES) do
+	self.onTextChanged = function(text: string)
+		self:setState({
+			searchTerm = text,
+		})
+	end
+
+	self.transformText = function(text: string)
+		return string.gsub(string.gsub(text, "[%s]+$", ""), "^[%s]+", "")
+	end
+
+	for _, serviceName in USER_SERVICES do
 		local service = game:GetService(serviceName)
 
 		self:lookForStories(service)
 
-		self.maid:GiveTask(service.DescendantAdded:Connect(function(child)
+		self.janitor:Add(service.DescendantAdded:Connect(function(child)
 			self:lookForStories(child)
 			self:checkStory(child)
-		end))
+		end), "Disconnect")
 	end
 end
 
 function Sidebar:patchStoryScripts(patch)
-	if self.cleaning then return end
+	if self.cleaning then
+		return
+	end
 
 	local storyScripts = {}
 
-	for storyScript in pairs(self.state.storyScripts or {}) do
+	for storyScript in self.state.storyScripts or {} do
 		storyScripts[storyScript] = true
 	end
 
 	local modified = false
 
-	for key, value in pairs(patch) do
+	for key, value in patch do
 		if value == NONE then
 			value = nil
 		end
@@ -102,7 +119,7 @@ function Sidebar:patchStoryScripts(patch)
 end
 
 function Sidebar:lookForStories(instance)
-	for _, child in ipairs(instance:GetDescendants()) do
+	for _, child in instance:GetDescendants() do
 		self:checkStory(child)
 	end
 end
@@ -116,32 +133,32 @@ function Sidebar:checkStory(instance)
 end
 
 function Sidebar:addStoryScript(storyScript)
-	local instanceMaid = Maid.new()
+	local instanceJanitor = Janitor.new()
 
-	instanceMaid:GiveTask(function()
+	instanceJanitor:Add(function()
 		self:removeStoryScript(storyScript)
-		self.maid[instanceMaid] = nil
-	end)
+		self.janitor:Remove(instanceJanitor)
+	end, true)
 
-	instanceMaid:GiveTask(storyScript.Changed:Connect(function()
+	instanceJanitor:Add(storyScript.Changed:Connect(function()
 		if not isStoryScript(storyScript) then
 			-- We were a story script, now we're not, remove us
-			instanceMaid:DoCleaning()
+			instanceJanitor:Cleanup()
 		end
-	end))
+	end), "Disconnect")
 
-	instanceMaid:GiveTask(storyScript.AncestryChanged:Connect(function()
+	instanceJanitor:Add(storyScript.AncestryChanged:Connect(function()
 		if not storyScript:IsDescendantOf(game) then
 			-- We were removed from the data model
-			instanceMaid:DoCleaning()
+			instanceJanitor:Cleanup()
 		end
-	end))
+	end), "Disconnect")
 
 	self:patchStoryScripts({
 		[storyScript] = true,
 	})
 
-	self.maid[instanceMaid] = instanceMaid
+	self.janitor:Add(instanceJanitor, "Cleanup", instanceJanitor) -- hopefully making this Cleanyo
 end
 
 function Sidebar:removeStoryScript(storyScript)
@@ -161,16 +178,65 @@ function Sidebar:removeStoryScript(storyScript)
 	end
 end
 
-function Sidebar:willUnmount()
+function Sidebar:componentWillUnmount()
 	self.cleaning = true
-	self.maid:DoCleaning()
+	self.janitor:Destroy()
+end
+
+type IStoryTreeEntry = {[number]: ModuleScript} & {[string]: IStoryTreeEntry}
+type IStoryTree = {[string]: IStoryTreeEntry}
+
+local Debounces = {}
+local function DisableDebounce(ErrorName: string)
+	Debounces[ErrorName] = nil
+end
+
+local function DebounceWarn(Length: number, ErrorName: string, ...: unknown)
+	if not Debounces[ErrorName] then
+		Debounces[ErrorName] = true
+		warn(...)
+		task.delay(Length, DisableDebounce, ErrorName)
+	end
+end
+
+--local EscapedCharacters = {"%", "^", "$", "(", ")", ".", "[", "]", "*", "+", "-", "?"}
+--local Escapable = "([%" .. table.concat(EscapedCharacters, "%") .. "])"
+
+--local function EscapeString(String: string): string
+--	return (string.gsub(string.gsub(String, Escapable, "%%%1"), "([\"'\\])", "\\%1"))
+--end
+
+local function SafeMatch(String: string, SearchTerm: string)
+	local Success, Value = pcall(string.match, String, SearchTerm)
+	if Success then
+		return Value ~= nil
+	else
+		DebounceWarn(1, "StringMatch", "string.match failed with error -", Value)
+		local FindSuccess, FindValue = pcall(string.find, String, SearchTerm)
+		if FindSuccess then
+			return FindValue ~= nil
+		else
+			DebounceWarn(1, "StringFind", "string.find failed with error -", FindValue)
+			return true
+		end
+	end
 end
 
 function Sidebar:render()
-	return e(StudioThemeAccessor, {}, {
+	local props = self.props
+	local state = self.state
+	local searchTerm = string.lower(state.searchTerm)
+	local isEmpty = searchTerm == ""
+
+	return Roact.createElement(StudioThemeAccessor, {}, {
 		function(theme)
-			local storyTree = {}
-			for storyScript in pairs(self.state.storyScripts or {}) do
+			local storyTree: IStoryTree = {}
+
+			for storyScript in state.storyScripts or {} do
+				if not (isEmpty or SafeMatch(string.lower(storyScript.Name), searchTerm)) then
+					continue
+				end
+
 				local hierarchy = {}
 				local parent = storyScript
 
@@ -180,8 +246,11 @@ function Sidebar:render()
 				until parent == game or parent == nil
 
 				local current = storyTree
-				for _, node in ipairs(hierarchy) do
+				for _, node in hierarchy do
 					if node == storyScript then
+						--if isEmpty or SafeMatch(storyScript.Name, searchTerm) then
+						--	table.insert(current, storyScript)
+						--end
 						table.insert(current, storyScript)
 						break
 					end
@@ -197,44 +266,69 @@ function Sidebar:render()
 			end
 
 			local storyLists = {}
-			for parent, children in pairs(storyTree) do
-				storyLists[parent] = e(SidebarList, {
+			for parent, children in storyTree do
+				storyLists[parent] = Roact.createElement(SidebarList, {
 					Children = children,
-					SelectStory = self.props.selectStory,
-					SelectedStory = self.props.selectedStory,
+					SelectStory = props.selectStory,
+					SelectedStory = props.selectedStory,
 					Title = parent,
 				})
 			end
 
-			return e("Frame", {
-				BackgroundColor3 = theme:GetColor("ScrollBarBackground", "Default"),
+			return Roact.createElement("Frame", {
+				BackgroundColor3 = theme:GetColor(
+					Enum.StudioStyleGuideColor.ScrollBarBackground,
+					Enum.StudioStyleGuideModifier.Default
+				),
+
 				BorderSizePixel = 0,
 				ClipsDescendants = true,
 				Size = UDim2.fromScale(1, 1),
 			}, {
-				UIListLayout = e("UIListLayout", {
+				UIListLayout = Roact.createElement("UIListLayout", {
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
 
-				UIPadding = e("UIPadding", {
+				UIPadding = Roact.createElement("UIPadding", {
 					PaddingLeft = UDim.new(0, 5),
 					PaddingTop = UDim.new(0, 2),
 				}),
 
-				StoriesLabel = e(TextLabel, {
-					Font = Enum.Font.SourceSansBold,
-					LayoutOrder = 1,
-					Text = "STORIES",
-					TextColor3 = theme:GetColor("DimmedText", "Default"),
+				StoriesLabelContainer = Roact.createElement("Frame", {
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+					Size = UDim2.fromScale(1, 0),
+				}, {
+					UIListLayout = Roact.createElement("UIListLayout", {
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					}),
+
+					StoriesLabel = Roact.createElement(TextLabel, {
+						Font = Enum.Font.SourceSansBold,
+						LayoutOrder = 0,
+						Text = "STORIES",
+						TextColor3 = theme:GetColor(
+							Enum.StudioStyleGuideColor.DimmedText,
+							Enum.StudioStyleGuideModifier.Default
+						),
+					}),
+
+					StoriesSearch = Roact.createElement(SearchBox, {
+						ClearTextOnFocus = true,
+						LayoutOrder = 1,
+						OnTextChanged = self.onTextChanged,
+						TransformText = self.transformText,
+					}),
 				}),
 
-				StoryLists = e(AutomatedScrollingFrame, {
+				StoryLists = Roact.createElement(AutomatedScrollingFrame, {
 					LayoutClass = "UIListLayout",
 
 					Native = {
 						BackgroundTransparency = 1,
-						LayoutOrder = 2,
-						Size = UDim2.new(1, 0, 1, -20),
+						BorderSizePixel = 0,
+						LayoutOrder = 1,
+						Size = UDim2.new(1, 0, 1, -40),
 					},
 				}, storyLists),
 			})
@@ -250,8 +344,8 @@ end, function(dispatch)
 	return {
 		selectStory = function(story)
 			dispatch({
-				type = "SetSelectedStory",
 				story = story,
+				type = "SetSelectedStory",
 			})
 		end,
 	}

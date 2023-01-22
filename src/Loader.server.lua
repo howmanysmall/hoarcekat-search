@@ -7,10 +7,10 @@ if not plugin then
 end
 
 -- RenderStepped errors out in Start Server, so we consider it a hostile environment even though it has a 3D view that we could potentially be using.
-local RunService = game:GetService("RunService")
-if not RunService:IsClient() then
-	return
-end
+-- local RunService = game:GetService("RunService")
+-- if not RunService:IsClient() then
+-- 	return
+-- end
 
 -- Change to true to enable hot reloading support. Opening a place
 -- containing the code synced via Rojo will cause the plugin to be
@@ -39,12 +39,12 @@ if useDevSource then
 end
 
 local PluginFacade = {
-	_toolbars = {},
-	_pluginGuis = {},
-	_buttons = {},
-	_watching = {},
-	_beforeUnload = nil,
-	isDev = useDevSource and devSource ~= nil,
+	_toolbars = {};
+	_pluginGuis = {};
+	_buttons = {};
+	_watching = {};
+	_beforeUnload = nil;
+	isDev = useDevSource and devSource ~= nil;
 }
 
 --[[
@@ -56,9 +56,7 @@ function PluginFacade:toolbar(name)
 	end
 
 	local toolbar = plugin:CreateToolbar(name)
-
 	self._toolbars[name] = toolbar
-
 	return toolbar
 end
 
@@ -80,9 +78,7 @@ function PluginFacade:button(toolbar, name, tooltip, icon)
 	end
 
 	local button = toolbar:CreateButton(name, tooltip, icon)
-
 	existingButtons[name] = button
-
 	return button
 end
 
@@ -96,7 +92,6 @@ function PluginFacade:createDockWidgetPluginGui(name, ...)
 
 	local gui = plugin:CreateDockWidgetPluginGui(name, ...)
 	self._pluginGuis[name] = gui
-
 	return gui
 end
 
@@ -111,17 +106,14 @@ function PluginFacade._load(_, savedState)
 	local ok, result = pcall(require, currentRoot.Plugin.Main)
 
 	if not ok then
-		warn("Plugin failed to load: " .. result)
+		warn(`Plugin failed to load: {result}`)
 		return
 	end
 
 	local Plugin = result
-
 	ok, result = pcall(Plugin, PluginFacade, savedState)
-
 	if not ok then
-		warn("Plugin failed to run: " .. result)
-		return
+		warn(`Plugin failed to run: {result}`)
 	end
 end
 
@@ -152,8 +144,7 @@ function PluginFacade:_watch(instance)
 	end
 
 	local connection1 = instance.Changed:Connect(function()
-		print("Reloading due to", instance:GetFullName())
-
+		print(`Reloading due to {instance:GetFullName()}`)
 		self:_reload()
 	end)
 
@@ -161,11 +152,10 @@ function PluginFacade:_watch(instance)
 		self:_watch(child)
 	end)
 
-	local connections = { connection1, connection2 }
-
+	local connections = {connection1, connection2}
 	self._watching[instance] = connections
 
-	for _, child in ipairs(instance:GetChildren()) do
+	for _, child in instance:GetChildren() do
 		self:_watch(child)
 	end
 end

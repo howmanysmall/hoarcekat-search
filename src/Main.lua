@@ -1,13 +1,11 @@
-local RunService = game:GetService('RunService')
-
+local RunService = game:GetService("RunService")
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 
+local App = require(script.Parent.Components.App)
 local Reducer = require(script.Parent.Reducer)
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactRodux = require(Hoarcekat.Vendor.RoactRodux)
 local Rodux = require(Hoarcekat.Vendor.Rodux)
-
-local App = require(script.Parent.Components.App)
 
 local function getSuffix(plugin)
 	if plugin.isDev then
@@ -19,21 +17,17 @@ end
 
 local function Main(plugin, savedState)
 	local displaySuffix, nameSuffix = getSuffix(plugin)
-	local toolbar = plugin:toolbar("Hoarcekat" .. displaySuffix)
+	local toolbar = plugin:toolbar("HoarcekatSearch2" .. displaySuffix)
 
-	local toggleButton = plugin:button(
-		toolbar,
-		"Hoarcekat",
-		"Open the Hoarcekat window",
-		"rbxassetid://4621571957"
-	)
+	local toggleButton =
+		plugin:button(toolbar, "HoarcekatSearch2", "Open the Hoarcekat window", "rbxassetid://4621571957")
 
-	local store = Rodux.Store.new(Reducer, savedState)
+	local store = Rodux.Store.new(Reducer, savedState, {})
 
 	local info = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Float, false, false, 0, 0)
-	local gui = plugin:createDockWidgetPluginGui("Hoarcekat" .. nameSuffix, info)
-	gui.Name = "Hoarcekat" .. nameSuffix
-	gui.Title = "Hoarcekat " .. displaySuffix
+	local gui = plugin:createDockWidgetPluginGui("HoarcekatSearch2" .. nameSuffix, info)
+	gui.Name = "HoarcekatSearch2" .. nameSuffix
+	gui.Title = "HoarcekatSearch2 " .. displaySuffix
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	toggleButton:SetActive(gui.Enabled)
 
@@ -45,18 +39,20 @@ local function Main(plugin, savedState)
 	local app = Roact.createElement(RoactRodux.StoreProvider, {
 		store = store,
 	}, {
-		App = Roact.createElement(App),
+		App = Roact.createElement(App, {}),
 	})
 
-	local instance = Roact.mount(app, gui, "Hoarcekat")
+	local instance = Roact.mount(app, gui, "HoarcekatSearch2")
 
 	plugin:beforeUnload(function()
 		Roact.unmount(instance)
 		connection:Disconnect()
-		return store:getState()
+		return store:GetState()
 	end)
 
-	if RunService:IsRunning() then return end
+	if RunService:IsRunning() then
+		return
+	end
 
 	local unloadConnection
 	unloadConnection = gui.AncestryChanged:Connect(function()

@@ -1,74 +1,64 @@
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
+local Roact = require(Hoarcekat.Vendor.Roact)
+local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
 
 local Assets = require(Hoarcekat.Plugin.Assets)
-local Roact = require(Hoarcekat.Vendor.Roact)
-local StudioThemeAccessor = require(script.Parent.StudioThemeAccessor)
+local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
 
-local e = Roact.createElement
+export type IFloatingButtonProps = {
+	Activated: (...any) -> (),
+	Image: string,
+	ImageSize: UDim,
+	Size: UDim,
+}
 
-local FloatingButton = Roact.Component:extend("FloatingButton")
+local function FloatingButton(props: IFloatingButtonProps)
+	local hovered, setHovered = RoactHooked.UseBinding(false)
+	local pressed, setPressed = RoactHooked.UseBinding(false)
+	local theme = UseTheme()
 
-function FloatingButton:init()
-	self.hovered, self.setHovered = Roact.createBinding(false)
-	self.pressed, self.setPressed = Roact.createBinding(false)
+	return Roact.createElement("ImageButton", {
+		BackgroundTransparency = 1,
+		Image = Assets.button_fill,
+		ImageColor3 = Roact.joinBindings({
+			hovered = hovered,
+			pressed = pressed,
+		}):map(function(state)
+			return theme.MainButton[state.pressed and "Pressed" or (state.hovered and "Hover" or "Default")]
+		end),
 
-	self.hover = function()
-		self.setHovered(true)
-	end
+		Size = UDim2.new(props.Size, props.Size),
 
-	self.unhover = function()
-		self.setHovered(false)
-	end
-
-	self.press = function()
-		self.setPressed(true)
-	end
-
-	self.unpress = function()
-		self.setPressed(false)
-	end
-end
-
-function FloatingButton:render()
-	local props = self.props
-
-	return e(StudioThemeAccessor, {}, {
-		function(theme)
-			return e("ImageButton", {
-				BackgroundTransparency = 1,
-				Image = Assets.button_fill,
-				ImageColor3 = Roact.joinBindings({
-					hovered = self.hovered,
-					pressed = self.pressed,
-				}):map(function(state)
-					return theme:GetColor(
-						"MainButton",
-						state.pressed
-							and "Pressed"
-							or (state.hovered
-								and "Hover"
-								or "Default"
-							)
-					)
-				end),
-				Size = UDim2.new(props.Size, props.Size),
-
-				[Roact.Event.MouseEnter] = self.hover,
-				[Roact.Event.MouseLeave] = self.unhover,
-				[Roact.Event.MouseButton1Down] = self.press,
-				[Roact.Event.MouseButton1Up] = self.unpress,
-				[Roact.Event.Activated] = props.Activated,
-			}, {
-				Image = e("ImageLabel", {
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					BackgroundTransparency = 1,
-					Image = props.Image,
-					Position = UDim2.fromScale(0.5, 0.5),
-					Size = UDim2.new(props.ImageSize, props.ImageSize),
-				}),
-			})
+		[Roact.Event.Activated] = props.Activated,
+		[Roact.Event.InputBegan] = function(_, inputObject: InputObject)
+			local userInputType = inputObject.UserInputType
+			if userInputType == Enum.UserInputType.MouseButton1 then
+				setPressed(true)
+			elseif userInputType == Enum.UserInputType.MouseMovement then
+				setHovered(true)
+			end
 		end,
+
+		[Roact.Event.InputEnded] = function(_, inputObject: InputObject)
+			local userInputType = inputObject.UserInputType
+			if userInputType == Enum.UserInputType.MouseButton1 then
+				setPressed(false)
+			elseif userInputType == Enum.UserInputType.MouseMovement then
+				setHovered(false)
+			end
+		end,
+	}, {
+		Image = Roact.createElement("ImageLabel", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundTransparency = 1,
+			Image = props.Image,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.new(props.ImageSize, props.ImageSize),
+		}),
 	})
 end
 
-return FloatingButton
+return RoactHooked.HookPure(FloatingButton, {
+	ComponentType = "PureComponent",
+	Name = "FloatingButton",
+})

@@ -1,40 +1,38 @@
-local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
-
+local Hoarcekat = script.Parent.Parent.Parent
 local Roact = require(Hoarcekat.Vendor.Roact)
+local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
 
-local e = Roact.createElement
-
-local AutomatedScrollingFrame = Roact.Component:extend("AutomatedScrollingFrame")
-
-function AutomatedScrollingFrame:init()
-	self.canvasSize, self.updateCanvasSize = Roact.createBinding(UDim2.new())
-
-	self.resize = function(rbx)
-		self.updateCanvasSize(rbx.AbsoluteContentSize)
+local function AutomatedScrollingFrame(props)
+	local canvasSize, updateCanvasSize = RoactHooked.UseBinding(UDim2.new())
+	local function resize(rbx: UIGridStyleLayout)
+		updateCanvasSize(rbx.AbsoluteContentSize)
 	end
-end
 
-function AutomatedScrollingFrame:render()
-	local layoutProps = {}
-	layoutProps[Roact.Change.AbsoluteContentSize] = self.resize
+	local layoutProps = {
+		[Roact.Change.AbsoluteContentSize] = resize,
+	}
 
-	for propName, propValue in pairs(self.props.LayoutProps or {}) do
+	for propName, propValue in props.LayoutProps or {} do
 		layoutProps[propName] = propValue
 	end
 
-	local nativeProps = {}
-	nativeProps.CanvasSize = self.canvasSize:map(function(size)
-		return UDim2.fromOffset(size.X, size.Y)
-	end)
+	local nativeProps = {
+		CanvasSize = canvasSize:map(function(size)
+			return UDim2.fromOffset(size.X, size.Y)
+		end),
+	}
 
-	for propName, propValue in pairs(self.props.Native or {}) do
+	for propName, propValue in props.Native or {} do
 		nativeProps[propName] = propValue
 	end
 
-	return e("ScrollingFrame", nativeProps, {
-		Layout = e(self.props.LayoutClass, layoutProps),
-		Children = Roact.createFragment(self.props[Roact.Children]),
+	return Roact.createElement("ScrollingFrame", nativeProps, {
+		Layout = Roact.createElement(props.LayoutClass, layoutProps),
+		Children = Roact.createFragment(props[Roact.Children]),
 	})
 end
 
-return AutomatedScrollingFrame
+return RoactHooked.HookPure(AutomatedScrollingFrame, {
+	ComponentType = "PureComponent",
+	Name = "AutomatedScrollingFrame",
+})

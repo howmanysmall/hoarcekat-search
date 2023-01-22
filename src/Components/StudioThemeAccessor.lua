@@ -1,31 +1,21 @@
-local Modules = script:FindFirstAncestor("Hoarcekat")
+local Hoarcekat = script.Parent.Parent.Parent
+local Roact = require(Hoarcekat.Vendor.Roact)
+local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
+local UseExternalEvent = require(Hoarcekat.Plugin.Hooks.UseExternalEvent)
 
-local Roact = require(Modules.Vendor.Roact)
-
-local StudioThemeAccessor = Roact.PureComponent:extend("StudioThemeAccessor")
-
-function StudioThemeAccessor:init()
+local function StudioThemeAccessor(props)
 	local studioSettings = settings().Studio
+	local theme, setTheme = RoactHooked.UseState(studioSettings.Theme)
 
-	self.state = {
-		theme = studioSettings.Theme,
-	}
-
-	self._themeConnection = studioSettings.ThemeChanged:Connect(function()
-		self:setState({
-			theme = studioSettings.Theme,
-		})
+	UseExternalEvent(studioSettings.ThemeChanged, function()
+		setTheme(studioSettings.Theme)
 	end)
+
+	local render = Roact.oneChild(props[Roact.Children])
+	return render(theme)
 end
 
-function StudioThemeAccessor:willUnmount()
-	self._themeConnection:Disconnect()
-end
-
-function StudioThemeAccessor:render()
-	local render = Roact.oneChild(self.props[Roact.Children])
-
-	return render(self.state.theme)
-end
-
-return StudioThemeAccessor
+return RoactHooked.HookPure(StudioThemeAccessor, {
+	ComponentType = "PureComponent",
+	Name = "StudioThemeAccessor",
+})
