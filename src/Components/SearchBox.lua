@@ -1,11 +1,14 @@
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
+
+local Assets = require(Hoarcekat.Plugin.Assets)
 local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
 
 export type ISearchBoxProps = {
 	-- Custom Properties
 	GraphemeLimit: number?,
+	PatternEnabled: boolean?,
 	TextLimit: number?,
 
 	-- Native Properties
@@ -16,6 +19,7 @@ export type ISearchBoxProps = {
 	-- Functions
 	OnFocused: nil | (rbx: TextBox) -> (),
 	OnFocusLost: nil | (text: string, enterPressed: boolean, inputObject: InputObject) -> (),
+	OnPatternToggle: nil | (usePattern: boolean) -> (),
 	OnTextChanged: nil | (text: string) -> (),
 
 	TransformText: nil | (text: string) -> string,
@@ -30,12 +34,18 @@ local function SearchBox(props: ISearchBoxProps)
 	local fontWeight, setFontWeight = RoactHooked.UseBinding(Enum.FontWeight.Bold)
 	local text, setText = RoactHooked.UseBinding("")
 
+	local hovered, setHovered = RoactHooked.UseBinding(false)
+	local pressed, setPressed = RoactHooked.UseBinding(false)
+
 	local theme = UseTheme()
 
 	local graphemeLimit = props.GraphemeLimit
 	local textLimit = props.TextLimit
 
 	local transformText = props.TransformText
+
+	local onPatternToggle = props.OnPatternToggle
+	local patternEnabled = props.PatternEnabled
 
 	RoactHooked.UseEffect(function()
 		setFontWeight(if hasText then Enum.FontWeight.Regular else Enum.FontWeight.Bold)
@@ -84,27 +94,111 @@ local function SearchBox(props: ISearchBoxProps)
 		end
 	end, RoactHooked.GetDependencies(props.OnFocusLost))
 
-	return Roact.createElement("TextBox", {
-		AutomaticSize = Enum.AutomaticSize.Y,
-		BackgroundColor3 = theme.ScrollBar.Default,
-		BorderSizePixel = 0,
-		ClearTextOnFocus = props.ClearTextOnFocus,
-		FontFace = fontWeight:map(GetFontFace),
-		LayoutOrder = props.LayoutOrder,
-		PlaceholderColor3 = theme.DimmedText.Default,
-		PlaceholderText = "SEARCH",
-		Position = props.Position,
-		Size = UDim2.new(1, 0, 0, 20),
-		Text = text,
-		TextColor3 = theme.SubText.Default,
-		TextSize = 18,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		ZIndex = 2,
+	if onPatternToggle then
+		local joinedBindings = Roact.joinBindings({
+			hovered = hovered,
+			pressed = pressed,
+		})
 
-		[Roact.Change.Text] = onTextChanged,
-		[Roact.Event.Focused] = props.OnFocused,
-		[Roact.Event.FocusLost] = onFocusLost,
-	})
+		return Roact.createElement("Frame", {
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundColor3 = theme.ScrollBar.Default,
+			BorderSizePixel = 0,
+			LayoutOrder = props.LayoutOrder,
+			Position = props.Position,
+			Size = UDim2.new(1, 0, 0, 20),
+			ZIndex = 2,
+		}, {
+			UIListLayout = Roact.createElement("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+			}),
+
+			Search = Roact.createElement("TextBox", {
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				ClearTextOnFocus = props.ClearTextOnFocus,
+				FontFace = fontWeight:map(GetFontFace),
+				LayoutOrder = 0,
+				PlaceholderColor3 = theme.DimmedText.Default,
+				PlaceholderText = "SEARCH",
+				Size = UDim2.new(1, -20, 0, 20),
+				Text = text,
+				TextColor3 = theme.SubText.Default,
+				TextSize = 18,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 2,
+				[Roact.Change.Text] = onTextChanged,
+				[Roact.Event.Focused] = props.OnFocused,
+				[Roact.Event.FocusLost] = onFocusLost,
+			}),
+
+			PatternToggle = Roact.createElement("ImageButton", {
+				BackgroundColor3 = joinedBindings:map(function(state: {hovered: boolean, pressed: boolean})
+					return theme.Button[if patternEnabled
+						then "Selected"
+						else state.pressed and "Pressed" or (state.hovered and "Hover" or "Default")]
+				end),
+
+				BorderSizePixel = 0,
+				Image = Assets.regexp,
+				ImageColor3 = joinedBindings:map(function(state: {hovered: boolean, pressed: boolean})
+					return theme.ButtonText[if patternEnabled
+						then "Selected"
+						else state.pressed and "Pressed" or (state.hovered and "Hover" or "Default")]
+				end),
+
+				LayoutOrder = 1,
+				Size = UDim2.fromOffset(20, 20),
+				ZIndex = 3,
+
+				[Roact.Event.Activated] = function()
+					onPatternToggle(not patternEnabled)
+				end,
+
+				[Roact.Event.InputBegan] = function(_, inputObject: InputObject)
+					local userInputType = inputObject.UserInputType
+					if userInputType == Enum.UserInputType.MouseButton1 then
+						setPressed(true)
+					elseif userInputType == Enum.UserInputType.MouseMovement then
+						setHovered(true)
+					end
+				end,
+
+				[Roact.Event.InputEnded] = function(_, inputObject: InputObject)
+					local userInputType = inputObject.UserInputType
+					if userInputType == Enum.UserInputType.MouseButton1 then
+						setPressed(false)
+					elseif userInputType == Enum.UserInputType.MouseMovement then
+						setHovered(false)
+					end
+				end,
+			}),
+		})
+	else
+		return Roact.createElement("TextBox", {
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundColor3 = theme.ScrollBar.Default,
+			BorderSizePixel = 0,
+			ClearTextOnFocus = props.ClearTextOnFocus,
+			FontFace = fontWeight:map(GetFontFace),
+			LayoutOrder = props.LayoutOrder,
+			PlaceholderColor3 = theme.DimmedText.Default,
+			PlaceholderText = "SEARCH",
+			Position = props.Position,
+			Size = UDim2.new(1, 0, 0, 20),
+			Text = text,
+			TextColor3 = theme.SubText.Default,
+			TextSize = 18,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			ZIndex = 2,
+
+			[Roact.Change.Text] = onTextChanged,
+			[Roact.Event.Focused] = props.OnFocused,
+			[Roact.Event.FocusLost] = onFocusLost,
+		})
+	end
 end
 
 return RoactHooked.HookPure(SearchBox, {

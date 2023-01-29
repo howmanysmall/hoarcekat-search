@@ -14,7 +14,7 @@ dependencies = [["Roact", "roblox/roact@1.4.2"]]
 
 [[package]]
 name = "kampfkarren/hoarcekat"
-version = "1.2.1"
+version = "1.2.3"
 dependencies = [["Janitor", "howmanysmall/janitor@1.15.1"], ["Roact", "roblox/roact@1.4.2"], ["RoactHooked", "howmanysmall/roact-hooked-luau@0.1.0"], ["RoactRodux", "roblox/roact-rodux@0.5.1"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
 
 [[package]]

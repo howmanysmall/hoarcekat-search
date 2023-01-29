@@ -14,6 +14,6 @@ local function EventConnection(props: IEventConnectionProps)
 end
 
 return RoactHooked.HookPure(EventConnection, {
-	ComponentType = "PureComponent",
-	Name = "EventConnection",
+	ComponentType = "PureComponent";
+	Name = "EventConnection";
 })

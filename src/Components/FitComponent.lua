@@ -2,6 +2,10 @@ local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
 
+local function MapSize(y: number)
+	return UDim2.new(1, 0, 0, y)
+end
+
 local function FitComponent(props)
 	local size, updateSize = RoactHooked.UseBinding(0)
 	local function sizeChanged(rbx: UIGridStyleLayout)
@@ -18,10 +22,7 @@ local function FitComponent(props)
 
 	layoutProps[Roact.Change.AbsoluteContentSize] = sizeChanged
 	children.Layout = Roact.createElement(props.LayoutClass, layoutProps)
-
-	containerProps.Size = size:map(function(y)
-		return UDim2.new(1, 0, 0, y)
-	end)
+	containerProps.Size = size:map(MapSize)
 
 	containerProps[Roact.Children] = children
 	return Roact.createElement(props.ContainerClass, containerProps)

@@ -4,6 +4,6 @@ return function(state, action)
 	state = state or {}
 
 	return {
-		StoryPicker = StoryPicker(state.StoryPicker, action),
+		StoryPicker = StoryPicker(state.StoryPicker, action);
 	}
 end

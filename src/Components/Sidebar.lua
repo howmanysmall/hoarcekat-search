@@ -63,7 +63,14 @@ function Sidebar:init()
 	self.janitor = Janitor.new()
 	self:setState({
 		searchTerm = "",
+		usePattern = false,
 	})
+
+	self.onPatternToggle = function(usePattern: boolean)
+		self:setState({
+			usePattern = usePattern,
+		})
+	end
 
 	self.onTextChanged = function(text: string)
 		self:setState({
@@ -199,20 +206,23 @@ local function DebounceWarn(Length: number, ErrorName: string, ...: unknown)
 	end
 end
 
---local EscapedCharacters = {"%", "^", "$", "(", ")", ".", "[", "]", "*", "+", "-", "?"}
---local Escapable = "([%" .. table.concat(EscapedCharacters, "%") .. "])"
-
---local function EscapeString(String: string): string
---	return (string.gsub(string.gsub(String, Escapable, "%%%1"), "([\"'\\])", "\\%1"))
---end
-
-local function SafeMatch(String: string, SearchTerm: string)
-	local Success, Value = pcall(string.match, String, SearchTerm)
-	if Success then
-		return Value ~= nil
+local function SafeMatch(String: string, SearchTerm: string, UsePattern: boolean)
+	if UsePattern then
+		local Success, Value = pcall(string.match, String, SearchTerm)
+		if Success then
+			return Value ~= nil
+		else
+			DebounceWarn(1, "StringMatch", "string.match failed with error -", Value)
+			local FindSuccess, FindValue = pcall(string.find, String, SearchTerm)
+			if FindSuccess then
+				return FindValue ~= nil
+			else
+				DebounceWarn(1, "StringFind", "string.find failed with error -", FindValue)
+				return true
+			end
+		end
 	else
-		DebounceWarn(1, "StringMatch", "string.match failed with error -", Value)
-		local FindSuccess, FindValue = pcall(string.find, String, SearchTerm)
+		local FindSuccess, FindValue = pcall(string.find, String, SearchTerm, nil, true)
 		if FindSuccess then
 			return FindValue ~= nil
 		else
@@ -227,13 +237,14 @@ function Sidebar:render()
 	local state = self.state
 	local searchTerm = string.lower(state.searchTerm)
 	local isEmpty = searchTerm == ""
+	local usePattern = state.usePattern
 
 	return Roact.createElement(StudioThemeAccessor, {}, {
 		function(theme)
 			local storyTree: IStoryTree = {}
 
 			for storyScript in state.storyScripts or {} do
-				if not (isEmpty or SafeMatch(string.lower(storyScript.Name), searchTerm)) then
+				if not (isEmpty or SafeMatch(string.lower(storyScript.Name), searchTerm, usePattern)) then
 					continue
 				end
 
@@ -316,6 +327,9 @@ function Sidebar:render()
 					StoriesSearch = Roact.createElement(SearchBox, {
 						ClearTextOnFocus = true,
 						LayoutOrder = 1,
+						PatternEnabled = usePattern,
+
+						OnPatternToggle = self.onPatternToggle,
 						OnTextChanged = self.onTextChanged,
 						TransformText = self.transformText,
 					}),

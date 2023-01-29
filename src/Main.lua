@@ -17,17 +17,17 @@ end
 
 local function Main(plugin, savedState)
 	local displaySuffix, nameSuffix = getSuffix(plugin)
-	local toolbar = plugin:toolbar("HoarcekatSearch2" .. displaySuffix)
+	local toolbar = plugin:toolbar("HoarcekatSearch" .. displaySuffix)
 
 	local toggleButton =
-		plugin:button(toolbar, "HoarcekatSearch2", "Open the Hoarcekat window", "rbxassetid://4621571957")
+		plugin:button(toolbar, "HoarcekatSearch", "Open the Hoarcekat window", "rbxassetid://4621571957")
 
 	local store = Rodux.Store.new(Reducer, savedState, {})
 
 	local info = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Float, false, false, 0, 0)
-	local gui = plugin:createDockWidgetPluginGui("HoarcekatSearch2" .. nameSuffix, info)
-	gui.Name = "HoarcekatSearch2" .. nameSuffix
-	gui.Title = "HoarcekatSearch2 " .. displaySuffix
+	local gui = plugin:createDockWidgetPluginGui("HoarcekatSearch" .. nameSuffix, info)
+	gui.Name = "HoarcekatSearch" .. nameSuffix
+	gui.Title = "HoarcekatSearch " .. displaySuffix
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	toggleButton:SetActive(gui.Enabled)
 
@@ -42,12 +42,12 @@ local function Main(plugin, savedState)
 		App = Roact.createElement(App, {}),
 	})
 
-	local instance = Roact.mount(app, gui, "HoarcekatSearch2")
+	local instance = Roact.mount(app, gui, "HoarcekatSearch")
 
 	plugin:beforeUnload(function()
 		Roact.unmount(instance)
 		connection:Disconnect()
-		return store:GetState()
+		return store:getState()
 	end)
 
 	if RunService:IsRunning() then

@@ -2,6 +2,10 @@ local Hoarcekat = script.Parent.Parent.Parent
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
 
+local function GetCanvasSize(size: Vector2)
+	return UDim2.fromOffset(size.X, size.Y)
+end
+
 local function AutomatedScrollingFrame(props)
 	local canvasSize, updateCanvasSize = RoactHooked.UseBinding(UDim2.new())
 	local function resize(rbx: UIGridStyleLayout)
@@ -17,9 +21,7 @@ local function AutomatedScrollingFrame(props)
 	end
 
 	local nativeProps = {
-		CanvasSize = canvasSize:map(function(size)
-			return UDim2.fromOffset(size.X, size.Y)
-		end),
+		CanvasSize = canvasSize:map(GetCanvasSize),
 	}
 
 	for propName, propValue in props.Native or {} do
