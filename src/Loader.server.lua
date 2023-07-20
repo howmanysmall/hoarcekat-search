@@ -83,6 +83,13 @@ function PluginFacade:button(toolbar, name, tooltip, icon)
 end
 
 --[[
+	Wrapper around plugin:GetMouse
+]]
+function PluginFacade:getMouse()
+	return plugin:GetMouse()
+end
+
+--[[
 	Wrapper around plugin:CreatePluginGui
 ]]
 function PluginFacade:createDockWidgetPluginGui(name, ...)

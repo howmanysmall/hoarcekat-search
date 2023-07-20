@@ -219,6 +219,7 @@ function Preview:render()
 				Image = Assets.preview,
 				ImageSize = UDim.new(0, 24),
 				Size = UDim.new(0, 40),
+				TooltipText = "Show in Explorer",
 			}),
 		}),
 
@@ -234,6 +235,7 @@ function Preview:render()
 				Image = "rbxasset://textures/ui/VR/toggle2D.png",
 				ImageSize = UDim.new(0, 24),
 				Size = UDim.new(0, 40),
+				TooltipText = "Change Location",
 			}),
 		}),
 

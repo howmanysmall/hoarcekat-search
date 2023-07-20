@@ -1,6 +1,7 @@
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
+local Tooltip = require(script.Parent.Tooltip)
 
 local Assets = require(Hoarcekat.Plugin.Assets)
 local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
@@ -132,6 +133,10 @@ local function SearchBox(props: ISearchBoxProps)
 				[Roact.Change.Text] = onTextChanged,
 				[Roact.Event.Focused] = props.OnFocused,
 				[Roact.Event.FocusLost] = onFocusLost,
+			}, {
+				Tooltip = Roact.createElement(Tooltip, {
+					Text = "Search for a story.",
+				}),
 			}),
 
 			PatternToggle = Roact.createElement("ImageButton", {
@@ -174,6 +179,10 @@ local function SearchBox(props: ISearchBoxProps)
 						setHovered(false)
 					end
 				end,
+			}, {
+				Tooltip = Roact.createElement(Tooltip, {
+					Text = "Use Luau patterns",
+				}),
 			}),
 		})
 	else
@@ -197,6 +206,10 @@ local function SearchBox(props: ISearchBoxProps)
 			[Roact.Change.Text] = onTextChanged,
 			[Roact.Event.Focused] = props.OnFocused,
 			[Roact.Event.FocusLost] = onFocusLost,
+		}, {
+			Tooltip = Roact.createElement(Tooltip, {
+				Text = "Search for a story.",
+			}),
 		})
 	end
 end

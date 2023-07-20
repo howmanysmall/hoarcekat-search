@@ -6,27 +6,23 @@ local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
 
 local Preview = require(script.Parent.Preview)
 local Sidebar = require(script.Parent.Sidebar)
+local VerticalSplitter = require(script.Parent.VerticalSplitter)
 
-local function App()
+export type IAppProps = {
+	Mouse: PluginMouse,
+}
+
+local function App(props: IAppProps)
 	local theme = UseTheme()
 	return Roact.createElement("Frame", {
 		BackgroundColor3 = theme.MainBackground.Default,
 		Size = UDim2.fromScale(1, 1),
 	}, {
-		Sidebar = Roact.createElement("Frame", {
-			BackgroundTransparency = 1,
-			Size = UDim2.fromScale(0.2, 1),
+		Splitter = Roact.createElement(VerticalSplitter, {
+			Mouse = props.Mouse,
 		}, {
-			Sidebar = Roact.createElement(Sidebar, {}),
-		}),
-
-		Preview = Roact.createElement("Frame", {
-			AnchorPoint = Vector2.xAxis,
-			BackgroundTransparency = 1,
-			Position = UDim2.fromScale(1, 0),
-			Size = UDim2.fromScale(0.8, 1),
-		}, {
-			Preview = Roact.createElement(Preview, {}),
+			Left = Roact.createElement(Sidebar, {}),
+			Right = Roact.createElement(Preview, {}),
 		}),
 	})
 end

@@ -3,20 +3,20 @@ local RoactHooked = require(script.Parent.Parent.Parent.Vendor:FindFirstChild("R
 local GetTheme = require(script:FindFirstChild("GetTheme"))
 
 local function UseTheme(): GetTheme.ThemeData
-	local Theme, SetTheme = RoactHooked.UseState(GetTheme())
+	local theme, setTheme = RoactHooked.UseState(GetTheme())
 	RoactHooked.UseEffect(function()
-		local Connection = settings().Studio.ThemeChanged:Once(function()
-			SetTheme(GetTheme())
+		local connection = settings().Studio.ThemeChanged:Connect(function()
+			setTheme(GetTheme())
 		end)
 
 		return function()
-			if Connection.Connected then
-				Connection:Disconnect()
+			if connection.Connected then
+				connection:Disconnect()
 			end
 		end
 	end)
 
-	return Theme
+	return theme
 end
 
 return UseTheme

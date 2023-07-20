@@ -15,7 +15,6 @@ local function IconListItem(props)
 		LayoutOrder = props.LayoutOrder,
 		Size = UDim2.new(1, 0, 0, BAR_HEIGHT),
 		Text = "",
-
 		[Roact.Event.Activated] = props.Activated,
 	}, {
 		Layout = Roact.createElement("UIListLayout", {

@@ -1,6 +1,7 @@
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
+local Tooltip = require(script.Parent.Tooltip)
 
 local Assets = require(Hoarcekat.Plugin.Assets)
 local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
@@ -10,12 +11,15 @@ export type IFloatingButtonProps = {
 	Image: string,
 	ImageSize: UDim,
 	Size: UDim,
+	TooltipText: string?,
 }
 
 local function FloatingButton(props: IFloatingButtonProps)
 	local hovered, setHovered = RoactHooked.UseBinding(false)
 	local pressed, setPressed = RoactHooked.UseBinding(false)
 	local theme = UseTheme()
+
+	local tooltipText = props.TooltipText
 
 	return Roact.createElement("ImageButton", {
 		BackgroundTransparency = 1,
@@ -55,6 +59,12 @@ local function FloatingButton(props: IFloatingButtonProps)
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.new(props.ImageSize, props.ImageSize),
 		}),
+
+		Tooltip = if tooltipText
+			then Roact.createElement(Tooltip, {
+				Text = tooltipText,
+			})
+			else nil,
 	})
 end
 

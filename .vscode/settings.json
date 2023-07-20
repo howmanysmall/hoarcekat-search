@@ -1,6 +1,6 @@
 {
+	"editor.fontFamily": "'Cascadia Code', \"Ligalex Mono\", 'JetBrains Mono', Consolas, 'Courier New', monospace",
+	"editor.fontLigatures": "'ss02', 'zero'",
 	"luau-lsp.sourcemap.rojoProjectFile": "place.project.json",
-	"robloxLsp.diagnostics.disable": [
-		"undefined-type"
-	]
+	"robloxLsp.diagnostics.disable": ["undefined-type"],
 }

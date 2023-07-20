@@ -6,30 +6,39 @@ export type ThemeData = Types.ThemeData
 local StudioStyleGuideColors = Enum.StudioStyleGuideColor:GetEnumItems()
 local StudioStyleGuideModifiers = Enum.StudioStyleGuideModifier:GetEnumItems()
 
+local THEME_CACHE: {[string]: ThemeData} = {}
+
 local function GetTheme(): ThemeData
-	local StudioTheme = settings().Studio.Theme :: StudioTheme
-	local Theme = {}
-	Theme.ThemeName = StudioTheme.Name
-
-	for _, StudioStyleGuideColor in StudioStyleGuideColors do
-		local Color = {}
-		for _, StudioStyleGuideModifier in StudioStyleGuideModifiers do
-			Color[StudioStyleGuideModifier.Name] = StudioTheme:GetColor(StudioStyleGuideColor, StudioStyleGuideModifier)
-		end
-
-		Theme[StudioStyleGuideColor.Name] = table.freeze(Color)
+	local studioTheme = settings().Studio.Theme :: StudioTheme
+	local cached = THEME_CACHE[studioTheme.Name]
+	if cached then
+		return cached
 	end
 
-	function Theme.GetColor(
-		StudioStyleGuideColor: Enum.StudioStyleGuideColor,
-		StudioStyleGuideModifier: Enum.StudioStyleGuideModifier?
+	local theme = {}
+	theme.ThemeName = studioTheme.Name
+
+	for _, studioStyleGuideColor in StudioStyleGuideColors do
+		local color = {}
+		for _, studioStyleGuideModifier in StudioStyleGuideModifiers do
+			color[studioStyleGuideModifier.Name] = studioTheme:GetColor(studioStyleGuideColor, studioStyleGuideModifier)
+		end
+
+		theme[studioStyleGuideColor.Name] = table.freeze(color)
+	end
+
+	function theme.GetColor(
+		studioStyleGuideColor: Enum.StudioStyleGuideColor,
+		studioStyleGuideModifier: Enum.StudioStyleGuideModifier?
 	)
-		return Theme[StudioStyleGuideColor.Name][if StudioStyleGuideModifier
-			then StudioStyleGuideModifier.Name
+		return theme[studioStyleGuideColor.Name][if studioStyleGuideModifier
+			then studioStyleGuideModifier.Name
 			else "Default"]
 	end
 
-	return (table.freeze(Theme) :: any) :: ThemeData
+	local trueTheme: ThemeData = table.freeze(theme) :: any
+	THEME_CACHE[studioTheme.Name] = trueTheme
+	return trueTheme
 end
 
 return GetTheme

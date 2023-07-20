@@ -3,29 +3,44 @@
 registry = "test"
 
 [[package]]
-name = "howmanysmall/janitor"
-version = "1.15.1"
+name = "evaera/promise"
+version = "4.0.0"
 dependencies = []
+
+[[package]]
+name = "howmanysmall/janitor"
+version = "1.15.4"
+dependencies = []
+
+[[package]]
+name = "howmanysmall/locker"
+version = "1.0.0"
+dependencies = []
+
+[[package]]
+name = "howmanysmall/reduction-utility"
+version = "1.0.0"
+dependencies = [["Locker", "howmanysmall/locker@1.0.0"]]
 
 [[package]]
 name = "howmanysmall/roact-hooked-luau"
 version = "0.1.0"
-dependencies = [["Roact", "roblox/roact@1.4.2"]]
+dependencies = [["Roact", "roblox/roact@1.4.4"]]
 
 [[package]]
 name = "kampfkarren/hoarcekat"
-version = "1.2.3"
-dependencies = [["Janitor", "howmanysmall/janitor@1.15.1"], ["Roact", "roblox/roact@1.4.2"], ["RoactHooked", "howmanysmall/roact-hooked-luau@0.1.0"], ["RoactRodux", "roblox/roact-rodux@0.5.1"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
+version = "1.3.1"
+dependencies = [["Janitor", "howmanysmall/janitor@1.15.4"], ["Promise", "evaera/promise@4.0.0"], ["ReductionUtility", "howmanysmall/reduction-utility@1.0.0"], ["Roact", "roblox/roact@1.4.4"], ["RoactHooked", "howmanysmall/roact-hooked-luau@0.1.0"], ["RoactRodux", "roblox/roact-rodux@0.5.1"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
 
 [[package]]
 name = "roblox/roact"
-version = "1.4.2"
+version = "1.4.4"
 dependencies = []
 
 [[package]]
 name = "roblox/roact-rodux"
 version = "0.5.1"
-dependencies = [["Roact", "roblox/roact@1.4.2"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
+dependencies = [["Roact", "roblox/roact@1.4.4"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
 
 [[package]]
 name = "roblox/rodux"
