@@ -11,7 +11,7 @@ local function GetCanvasSize(size: Vector2)
 end
 
 local function AutomatedScrollingFrame(properties)
-	local canvasSize, updateCanvasSize = RoactHooked.UseBinding(UDim2.new())
+	local canvasSize, updateCanvasSize = RoactHooked.UseBinding(Vector2.zero)
 	local function resize(rbx: UIGridStyleLayout)
 		updateCanvasSize(rbx.AbsoluteContentSize)
 	end
