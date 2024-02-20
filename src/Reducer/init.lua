@@ -1,3 +1,6 @@
+--!native
+--!optimize 2
+
 local StoryPicker = require(script.StoryPicker)
 
 return function(state, action)

@@ -1,5 +1,8 @@
-local ReductionUtility = require(script.Parent.Parent.Parent.Parent.Vendor.ReductionUtility)
+--!native
+--!optimize 2
+--!strict
 
+local ReductionUtility = require(script.Parent.Parent.Parent.Parent.Vendor.ReductionUtility)
 local DEFAULT_ALPHA = 0.2
 
 local Reduction = {}
@@ -22,13 +25,13 @@ Reduction.SetHovering = ReductionUtility.MakeActionCreator("SetHovering", functi
 	}
 end)
 
-export type IState = {
+export type State = {
 	Alpha: number,
 	Dragging: boolean,
 	Hovering: boolean,
 }
 
-local INITIAL_STATE: IState = table.freeze({
+local INITIAL_STATE: State = table.freeze({
 	Alpha = DEFAULT_ALPHA;
 	Dragging = false;
 	Hovering = false;
@@ -36,19 +39,19 @@ local INITIAL_STATE: IState = table.freeze({
 Reduction.InitialState = INITIAL_STATE
 
 Reduction.Reducer = ReductionUtility.CreateReducer(INITIAL_STATE, {
-	[Reduction.SetAlpha.name] = function(state: IState, action: {Value: number})
+	[Reduction.SetAlpha.name] = function(state: State, action: {Value: number})
 		local new = table.clone(state)
 		new.Alpha = action.Value
 		return table.freeze(new)
 	end;
 
-	[Reduction.SetDragging.name] = function(state: IState, action: {Value: boolean})
+	[Reduction.SetDragging.name] = function(state: State, action: {Value: boolean})
 		local new = table.clone(state)
 		new.Dragging = action.Value
 		return table.freeze(new)
 	end;
 
-	[Reduction.SetHovering.name] = function(state: IState, action: {Value: boolean})
+	[Reduction.SetHovering.name] = function(state: State, action: {Value: boolean})
 		local new = table.clone(state)
 		new.Hovering = action.Value
 		return table.freeze(new)

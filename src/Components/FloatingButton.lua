@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)

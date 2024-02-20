@@ -1,6 +1,9 @@
+--!native
 --!optimize 2
-local RoactHooked = require(script.Parent.Parent.Parent.Vendor:FindFirstChild("RoactHooked"))
+--!strict
+
 local GetTheme = require(script:FindFirstChild("GetTheme"))
+local RoactHooked = require(script.Parent.Parent.Parent.Vendor:FindFirstChild("RoactHooked"))
 
 local function UseTheme(): GetTheme.ThemeData
 	local theme, setTheme = RoactHooked.UseState(GetTheme())

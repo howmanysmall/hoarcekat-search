@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
@@ -6,7 +10,7 @@ local Tooltip = require(script.Parent.Tooltip)
 local Assets = require(Hoarcekat.Plugin.Assets)
 local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
 
-export type ISearchBoxProps = {
+export type SearchBoxProperties = {
 	-- Custom Properties
 	GraphemeLimit: number?,
 	PatternEnabled: boolean?,
@@ -26,11 +30,11 @@ export type ISearchBoxProps = {
 	TransformText: nil | (text: string) -> string,
 }
 
-local function GetFontFace(value)
+local function GetFontFace(value: Enum.FontWeight)
 	return Font.new("rbxasset://fonts/families/SourceSansPro.json", value)
 end
 
-local function SearchBox(props: ISearchBoxProps)
+local function SearchBox(properties: SearchBoxProperties)
 	local hasText, setHasText = RoactHooked.UseState(false)
 	local fontWeight, setFontWeight = RoactHooked.UseBinding(Enum.FontWeight.Bold)
 	local text, setText = RoactHooked.UseBinding("")
@@ -40,13 +44,13 @@ local function SearchBox(props: ISearchBoxProps)
 
 	local theme = UseTheme()
 
-	local graphemeLimit = props.GraphemeLimit
-	local textLimit = props.TextLimit
+	local graphemeLimit = properties.GraphemeLimit
+	local textLimit = properties.TextLimit
 
-	local transformText = props.TransformText
+	local transformText = properties.TransformText
 
-	local onPatternToggle = props.OnPatternToggle
-	local patternEnabled = props.PatternEnabled
+	local onPatternToggle = properties.OnPatternToggle
+	local patternEnabled = properties.PatternEnabled
 
 	RoactHooked.UseEffect(function()
 		setFontWeight(if hasText then Enum.FontWeight.Regular else Enum.FontWeight.Bold)
@@ -84,16 +88,16 @@ local function SearchBox(props: ISearchBoxProps)
 		setText(newText)
 		setHasText(newText ~= "")
 
-		if props.OnTextChanged then
-			props.OnTextChanged(newText)
+		if properties.OnTextChanged then
+			properties.OnTextChanged(newText)
 		end
-	end, RoactHooked.GetDependencies(props.OnTextChanged, limitText, transformText))
+	end, RoactHooked.GetDependencies(properties.OnTextChanged, limitText, transformText))
 
 	local onFocusLost = RoactHooked.UseCallback(function(_, enterPressed: boolean, inputObject: InputObject)
-		if props.OnFocusLost then
-			props.OnFocusLost(text:getValue(), enterPressed, inputObject)
+		if properties.OnFocusLost then
+			properties.OnFocusLost(text:getValue(), enterPressed, inputObject)
 		end
-	end, RoactHooked.GetDependencies(props.OnFocusLost))
+	end, RoactHooked.GetDependencies(properties.OnFocusLost))
 
 	if onPatternToggle then
 		local joinedBindings = Roact.joinBindings({
@@ -105,8 +109,8 @@ local function SearchBox(props: ISearchBoxProps)
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundColor3 = theme.ScrollBar.Default,
 			BorderSizePixel = 0,
-			LayoutOrder = props.LayoutOrder,
-			Position = props.Position,
+			LayoutOrder = properties.LayoutOrder,
+			Position = properties.Position,
 			Size = UDim2.new(1, 0, 0, 20),
 			ZIndex = 2,
 		}, {
@@ -119,7 +123,7 @@ local function SearchBox(props: ISearchBoxProps)
 			Search = Roact.createElement("TextBox", {
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
-				ClearTextOnFocus = props.ClearTextOnFocus,
+				ClearTextOnFocus = properties.ClearTextOnFocus,
 				FontFace = fontWeight:map(GetFontFace),
 				LayoutOrder = 0,
 				PlaceholderColor3 = theme.DimmedText.Default,
@@ -131,7 +135,7 @@ local function SearchBox(props: ISearchBoxProps)
 				TextXAlignment = Enum.TextXAlignment.Left,
 				ZIndex = 2,
 				[Roact.Change.Text] = onTextChanged,
-				[Roact.Event.Focused] = props.OnFocused,
+				[Roact.Event.Focused] = properties.OnFocused,
 				[Roact.Event.FocusLost] = onFocusLost,
 			}, {
 				Tooltip = Roact.createElement(Tooltip, {
@@ -190,12 +194,12 @@ local function SearchBox(props: ISearchBoxProps)
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundColor3 = theme.ScrollBar.Default,
 			BorderSizePixel = 0,
-			ClearTextOnFocus = props.ClearTextOnFocus,
+			ClearTextOnFocus = properties.ClearTextOnFocus,
 			FontFace = fontWeight:map(GetFontFace),
-			LayoutOrder = props.LayoutOrder,
+			LayoutOrder = properties.LayoutOrder,
 			PlaceholderColor3 = theme.DimmedText.Default,
 			PlaceholderText = "SEARCH",
-			Position = props.Position,
+			Position = properties.Position,
 			Size = UDim2.new(1, 0, 0, 20),
 			Text = text,
 			TextColor3 = theme.SubText.Default,
@@ -204,7 +208,7 @@ local function SearchBox(props: ISearchBoxProps)
 			ZIndex = 2,
 
 			[Roact.Change.Text] = onTextChanged,
-			[Roact.Event.Focused] = props.OnFocused,
+			[Roact.Event.Focused] = properties.OnFocused,
 			[Roact.Event.FocusLost] = onFocusLost,
 		}, {
 			Tooltip = Roact.createElement(Tooltip, {

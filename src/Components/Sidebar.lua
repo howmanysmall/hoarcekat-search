@@ -31,9 +31,15 @@ local function isStoryScript(instance)
 end
 
 local function SidebarList(props)
+	local children = props.Children
+	if type(children) ~= "table" then
+		warn(`Invalid children passed to SidebarList - {children} ({typeof(children)})`)
+		return Roact.createFragment({})
+	end
+
 	local contents = {}
 
-	for childName, child in props.Children do
+	for childName, child in children do
 		if typeof(child) == "Instance" then
 			contents["Instance" .. child.Name] = Roact.createElement(IconListItem, {
 				Activated = function()
@@ -185,7 +191,7 @@ function Sidebar:removeStoryScript(storyScript)
 	end
 end
 
-function Sidebar:componentWillUnmount()
+function Sidebar:willUnmount()
 	self.cleaning = true
 	self.janitor:Destroy()
 end

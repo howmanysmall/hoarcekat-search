@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 -- Taken from https://github.com/tiffany352/Roblox-Tag-Editor/blob/bd48fb7ceea6bcd1cd9c515891ae4eb4eb9d1a71/src/Loader.server.lua#L24
 -- Thank you Tiffany352!!!
 

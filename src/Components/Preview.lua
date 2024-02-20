@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local CoreGui = game:GetService("CoreGui")
 local Selection = game:GetService("Selection")
 

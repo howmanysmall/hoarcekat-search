@@ -1,4 +1,7 @@
+--!native
+--!optimize 2
 --!strict
+
 local Hoarcekat = script.Parent.Parent.Parent
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
@@ -8,7 +11,7 @@ local Reduction = require(script.Reduction)
 
 local HANDLE_WIDTH = 4
 
-export type IVerticalSplitterProps = {
+export type VerticalSplitterProperties = {
 	AnchorPoint: Vector2,
 	LayoutOrder: number?,
 	Position: UDim2,
@@ -17,7 +20,7 @@ export type IVerticalSplitterProps = {
 	Mouse: PluginMouse,
 }
 
-local function VerticalSplitter(props: IVerticalSplitterProps)
+local function VerticalSplitter(properties: VerticalSplitterProperties)
 	local containerRef = RoactHooked.UseRef()
 	local state, dispatch = RoactHooked.UseReducer(Reduction.Reducer, Reduction.InitialState)
 	local theme = UseTheme()
@@ -26,7 +29,7 @@ local function VerticalSplitter(props: IVerticalSplitterProps)
 	local dragging = state.Dragging
 	local hovering = state.Hovering
 
-	local mouse = props.Mouse
+	local mouse = properties.Mouse
 
 	local onInputBegan = RoactHooked.UseCallback(function(_, inputObject: InputObject)
 		local userInputType = inputObject.UserInputType
@@ -71,12 +74,12 @@ local function VerticalSplitter(props: IVerticalSplitterProps)
 	end, {})
 
 	return Roact.createElement("Frame", {
-		AnchorPoint = props.AnchorPoint,
+		AnchorPoint = properties.AnchorPoint,
 		BackgroundTransparency = 1,
-		LayoutOrder = props.LayoutOrder,
-		Position = props.Position,
-		Size = props.Size,
-		ZIndex = props.ZIndex,
+		LayoutOrder = properties.LayoutOrder,
+		Position = properties.Position,
+		Size = properties.Size,
+		ZIndex = properties.ZIndex,
 		[Roact.Ref] = containerRef,
 		[Roact.Event.InputChanged] = onInputChanged,
 	}, {
@@ -85,7 +88,7 @@ local function VerticalSplitter(props: IVerticalSplitterProps)
 			Position = UDim2.new(),
 			Size = UDim2.new(alpha, -HANDLE_WIDTH / 2, 1, 0),
 			ZIndex = 0,
-		}, {props[Roact.Children].Left}),
+		}, {properties[Roact.Children].Left}),
 
 		Right = Roact.createElement("Frame", {
 			AnchorPoint = Vector2.xAxis,
@@ -93,7 +96,7 @@ local function VerticalSplitter(props: IVerticalSplitterProps)
 			Position = UDim2.fromScale(1, 0),
 			Size = UDim2.new(1 - alpha, -HANDLE_WIDTH / 2, 1, 0),
 			ZIndex = 0,
-		}, {props[Roact.Children].Right}),
+		}, {properties[Roact.Children].Right}),
 
 		Grabber = Roact.createElement("TextButton", {
 			AnchorPoint = Vector2.new(0.5, 0),

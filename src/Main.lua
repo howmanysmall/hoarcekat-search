@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local RunService = game:GetService("RunService")
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 

@@ -1,9 +1,13 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script.Parent.Parent.Parent
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
 local UseExternalEvent = require(Hoarcekat.Plugin.Hooks.UseExternalEvent)
 
-local function StudioThemeAccessor(props)
+local function StudioThemeAccessor(properties)
 	local studioSettings = settings().Studio
 	local theme, setTheme = RoactHooked.UseState(studioSettings.Theme)
 
@@ -11,7 +15,7 @@ local function StudioThemeAccessor(props)
 		setTheme(studioSettings.Theme)
 	end)
 
-	local render = Roact.oneChild(props[Roact.Children])
+	local render = Roact.oneChild(properties[Roact.Children])
 	return render(theme)
 end
 

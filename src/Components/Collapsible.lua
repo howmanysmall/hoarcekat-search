@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 
 local Roact = require(Hoarcekat.Vendor.Roact)
@@ -10,10 +14,10 @@ local IconListItem = require(script.Parent.IconListItem)
 
 local OFFSET = 8
 
-local function Collapsible(props)
+local function Collapsible(properties)
 	local open, toggle = RoactHooked.UseToggle(true)
 
-	local content = open and props[Roact.Children]
+	local content = open and properties[Roact.Children]
 	return Roact.createElement(FitComponent, {
 		ContainerClass = "Frame",
 		ContainerProps = {
@@ -29,7 +33,7 @@ local function Collapsible(props)
 		Topbar = Roact.createElement(IconListItem, {
 			Activated = toggle,
 			Icon = open and Assets.collapse_down or Assets.collapse_right,
-			Text = props.Title,
+			Text = properties.Title,
 		}),
 
 		Content = content and Roact.createElement(FitComponent, {

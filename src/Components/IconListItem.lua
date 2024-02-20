@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
@@ -6,16 +10,16 @@ local UseTheme = require(Hoarcekat.Plugin.Hooks.UseTheme)
 local BAR_HEIGHT = 24
 local ICON_SIZE = 16
 
-local function IconListItem(props)
+local function IconListItem(properties)
 	local theme = UseTheme()
 	return Roact.createElement("TextButton", {
 		BackgroundColor3 = theme.CurrentMarker.Selected,
-		BackgroundTransparency = props.Selected and 0.5 or 1,
+		BackgroundTransparency = if properties.Selected then 0.5 else 1,
 		BorderSizePixel = 0,
-		LayoutOrder = props.LayoutOrder,
+		LayoutOrder = properties.LayoutOrder,
 		Size = UDim2.new(1, 0, 0, BAR_HEIGHT),
 		Text = "",
-		[Roact.Event.Activated] = props.Activated,
+		[Roact.Event.Activated] = properties.Activated,
 	}, {
 		Layout = Roact.createElement("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
@@ -33,7 +37,7 @@ local function IconListItem(props)
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				Image = props.Icon,
+				Image = properties.Icon,
 				ImageColor3 = theme.BrightText.Default,
 				Position = UDim2.fromScale(0.5, 0.5),
 				Size = UDim2.fromOffset(ICON_SIZE, ICON_SIZE),
@@ -45,7 +49,7 @@ local function IconListItem(props)
 			BorderSizePixel = 0,
 			LayoutOrder = 2,
 			Size = UDim2.new(1, -BAR_HEIGHT, 0, BAR_HEIGHT),
-			Text = props.Text,
+			Text = properties.Text,
 			TextColor3 = theme.BrightText.Default,
 			TextXAlignment = Enum.TextXAlignment.Left,
 		}),

@@ -1,3 +1,6 @@
+--!native
+--!optimize 2
+
 return function(state, action)
 	state = state or nil
 

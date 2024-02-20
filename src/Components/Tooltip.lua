@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script.Parent.Parent.Parent
 local Roact = require(Hoarcekat.Vendor.Roact)
 local RoactHooked = require(Hoarcekat.Vendor.RoactHooked)
@@ -28,14 +32,14 @@ local function OffsetFromVector2(value: Vector2)
 	return UDim2.fromOffset(value.X, value.Y)
 end
 
-export type ITooltipProps = {
+export type TooltipProperties = {
 	Disabled: boolean,
 	HoverDelay: number,
 	MaxWidth: number,
 	Text: string,
 }
 
-local function Tooltip(props: ITooltipProps)
+local function Tooltip(properties: TooltipProperties)
 	local display, setDisplay = RoactHooked.UseState(false)
 	local textSize, setTextSize = RoactHooked.UseBinding(Vector2.zero)
 
@@ -49,10 +53,10 @@ local function Tooltip(props: ITooltipProps)
 	local borderColor3 = theme.Border.Default
 	local textColor3 = theme.MainText.Default
 
-	local disabled = props.Disabled
-	local hoverDelay = props.HoverDelay
-	local maxWidth = props.MaxWidth
-	local text = props.Text
+	local disabled = properties.Disabled
+	local hoverDelay = properties.HoverDelay
+	local maxWidth = properties.MaxWidth
+	local text = properties.Text
 
 	local cancel = RoactHooked.UseCallback(function()
 		if display then

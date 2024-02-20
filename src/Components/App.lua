@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local Hoarcekat = script:FindFirstAncestor("Hoarcekat")
 
 local Roact = require(Hoarcekat.Vendor.Roact)
@@ -8,18 +12,18 @@ local Preview = require(script.Parent.Preview)
 local Sidebar = require(script.Parent.Sidebar)
 local VerticalSplitter = require(script.Parent.VerticalSplitter)
 
-export type IAppProps = {
+export type AppProperties = {
 	Mouse: PluginMouse,
 }
 
-local function App(props: IAppProps)
+local function App(properties: AppProperties)
 	local theme = UseTheme()
 	return Roact.createElement("Frame", {
 		BackgroundColor3 = theme.MainBackground.Default,
 		Size = UDim2.fromScale(1, 1),
 	}, {
 		Splitter = Roact.createElement(VerticalSplitter, {
-			Mouse = props.Mouse,
+			Mouse = properties.Mouse,
 		}, {
 			Left = Roact.createElement(Sidebar, {}),
 			Right = Roact.createElement(Preview, {}),

@@ -1,5 +1,7 @@
+--!native
 --!optimize 2
 --!strict
+
 local Types = require(script:FindFirstChild("Types"))
 export type ThemeData = Types.ThemeData
 

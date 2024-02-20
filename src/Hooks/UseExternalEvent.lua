@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 local RoactHooked = require(script.Parent.Parent.Parent.Vendor.RoactHooked)
 
 local function UseExternalEvent(Event: RBXScriptSignal, Function: (...any) -> ())
