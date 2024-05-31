@@ -47,10 +47,12 @@ local function IconListItem(properties)
 		Title = Roact.createElement("TextLabel", {
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
+			FontFace = Font.fromName("BuilderSans"),
 			LayoutOrder = 2,
 			Size = UDim2.new(1, -BAR_HEIGHT, 0, BAR_HEIGHT),
 			Text = properties.Text,
 			TextColor3 = theme.BrightText.Default,
+			TextSize = 14,
 			TextXAlignment = Enum.TextXAlignment.Left,
 		}),
 	})

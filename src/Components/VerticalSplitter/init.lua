@@ -38,7 +38,7 @@ local function VerticalSplitter(properties: VerticalSplitterProperties)
 		elseif userInputType == Enum.UserInputType.MouseButton1 then
 			dispatch(Reduction.SetDragging(true))
 		end
-	end, RoactHooked.GetDependencies(dispatch))
+	end, {})
 
 	local onInputChanged = RoactHooked.UseCallback(function(_, inputObject: InputObject)
 		if inputObject.UserInputType == Enum.UserInputType.MouseMovement and dragging then
@@ -48,7 +48,7 @@ local function VerticalSplitter(properties: VerticalSplitterProperties)
 			offset = math.clamp(offset, HANDLE_WIDTH, width - HANDLE_WIDTH)
 			dispatch(Reduction.SetAlpha(offset / width))
 		end
-	end, RoactHooked.GetDependencies(dispatch, dragging))
+	end, RoactHooked.GetDependencies(dragging))
 
 	local onInputEnded = RoactHooked.UseCallback(function(_, inputObject: InputObject)
 		local userInputType = inputObject.UserInputType
@@ -57,7 +57,7 @@ local function VerticalSplitter(properties: VerticalSplitterProperties)
 		elseif userInputType == Enum.UserInputType.MouseButton1 then
 			dispatch(Reduction.SetDragging(false))
 		end
-	end, RoactHooked.GetDependencies(dispatch))
+	end, {})
 
 	local updateMouseIcon = RoactHooked.UseCallback(function()
 		mouse.Icon = if hovering or dragging then "rbxasset://SystemCursors/SplitEW" else ""
@@ -65,7 +65,7 @@ local function VerticalSplitter(properties: VerticalSplitterProperties)
 
 	RoactHooked.UseEffect(function()
 		updateMouseIcon()
-	end, {})
+	end, {updateMouseIcon})
 
 	RoactHooked.UseEffect(function()
 		return function()

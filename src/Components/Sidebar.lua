@@ -197,7 +197,7 @@ function Sidebar:willUnmount()
 end
 
 type IStoryTreeEntry = {[number]: ModuleScript} & {[string]: IStoryTreeEntry}
-type IStoryTree = {[string]: IStoryTreeEntry}
+type StoryTree = {[string]: IStoryTreeEntry}
 
 local Debounces = {}
 local function DisableDebounce(ErrorName: string)
@@ -247,7 +247,7 @@ function Sidebar:render()
 
 	return Roact.createElement(StudioThemeAccessor, {}, {
 		function(theme)
-			local storyTree: IStoryTree = {}
+			local storyTree: StoryTree = {}
 
 			for storyScript in state.storyScripts or {} do
 				if not (isEmpty or SafeMatch(string.lower(storyScript.Name), searchTerm, usePattern)) then
