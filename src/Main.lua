@@ -20,7 +20,7 @@ local function getSuffix(plugin)
 end
 
 local function Main(plugin, savedState)
-	local pluginName = "HoarcekatSearch"
+	local pluginName = "Hoarcekat"
 	local displaySuffix, nameSuffix = getSuffix(plugin)
 	local toolbar = plugin:toolbar(pluginName .. displaySuffix)
 
