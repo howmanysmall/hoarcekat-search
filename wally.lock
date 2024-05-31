@@ -9,7 +9,7 @@ dependencies = []
 
 [[package]]
 name = "howmanysmall/janitor"
-version = "1.15.7"
+version = "1.16.0"
 dependencies = [["Promise", "evaera/promise@4.0.0"]]
 
 [[package]]
@@ -29,8 +29,8 @@ dependencies = [["Roact", "roblox/roact@1.4.4"]]
 
 [[package]]
 name = "kampfkarren/hoarcekat"
-version = "1.3.1"
-dependencies = [["Janitor", "howmanysmall/janitor@1.15.7"], ["Promise", "evaera/promise@4.0.0"], ["ReductionUtility", "howmanysmall/reduction-utility@1.0.0"], ["Roact", "roblox/roact@1.4.4"], ["RoactHooked", "howmanysmall/roact-hooked-luau@0.1.0"], ["RoactRodux", "roblox/roact-rodux@0.5.1"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
+version = "1.3.2"
+dependencies = [["Janitor", "howmanysmall/janitor@1.16.0"], ["Promise", "evaera/promise@4.0.0"], ["ReductionUtility", "howmanysmall/reduction-utility@1.0.0"], ["Roact", "roblox/roact@1.4.4"], ["RoactHooked", "howmanysmall/roact-hooked-luau@0.1.0"], ["RoactRodux", "roblox/roact-rodux@0.5.1"], ["Rodux", "roblox/rodux@4.0.0-rc.0"]]
 
 [[package]]
 name = "roblox/roact"
