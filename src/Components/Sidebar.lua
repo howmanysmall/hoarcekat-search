@@ -171,6 +171,10 @@ function Sidebar:addStoryScript(storyScript)
 		[storyScript] = true,
 	})
 
+	if not self.janitor.Add then
+		return
+	end
+
 	self.janitor:Add(instanceJanitor, "Cleanup", instanceJanitor) -- hopefully making this Cleanyo
 end
 
